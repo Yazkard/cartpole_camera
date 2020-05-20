@@ -16,7 +16,7 @@ class CustomCartPoleEnv(gym.Env):
     Observation: 
         Type: Box(4)
         Num	Observation               Min             Max
-        0	Cart Position             -10.0           10.0
+        0	Cart Position             -100.0          100.0
         1	Cart Velocity             -Inf            Inf
         2	Pole 1 Angle              -180 deg        180 deg
         3	Pole 1 Velocity At Tip    -Inf            Inf
@@ -32,21 +32,20 @@ class CustomCartPoleEnv(gym.Env):
         pointing. This is because the center of gravity of the pole increases the amount of energy needed to move the
         cart underneath it
     Reward:
-        Reward is 1 for every step when poles are no more than 20 degree from straight up
+        
     Starting State:
         All observations are assigned a uniform random value
     Episode Termination: #to change
-        Cart Position is more than 100 (center of the cart reaches the edge of the display)
-        Episode length is greater than 2000
+        Cart Position is more than 1000 (center of the cart reaches the edge of the display)
     """
     metadata = {'render.modes': ['human']}
 
     def __init__(self, mode,render_mode='human'):
         self.cart = Cart(10)
-        self.pole = Pole(1, 10, 5)
+        self.pole = Pole(1, 10, 10)
         self.gravity = 9.8
         self.time_step = 0.02
-        self.force_mag = 100.0
+        self.force_mag = 400.0
         self.mode = mode
         self.render_mode = render_mode
 
@@ -96,22 +95,23 @@ class CustomCartPoleEnv(gym.Env):
         
         T = Finv.dot(G)
 
-        print(T)
+        #print(T)
 
         self.cart.make_step(T[0], self.time_step)
         self.pole.make_step(T[1], self.time_step)
 
-        self.cart.print_info()
-        self.pole.print_info()
+        #self.cart.print_info()
+        #self.pole.print_info()
         
         out_of_bounds =  self.cart.x < -self.x_threshold or self.cart.x > self.x_threshold
         done = bool(out_of_bounds)
 
         if done:
-            reward = -1000.0
+            reward = -10.0
         else:
+            r1 = self.cart.give_reward()
             r,v = self.pole.give_reward()
-            reward = r-v
+            reward = r+r1
 
         if self.render_mode != 'no' or self.mode:
             self.render(mode=self.render_mode)

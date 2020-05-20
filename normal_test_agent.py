@@ -11,14 +11,14 @@ import timeit
 
 # AGENT/NETWORK HYPERPARAMETERS
 EPSILON_INITIAL = 1.0 # exploration rate
-EPSILON_DECAY = 0.99
+EPSILON_DECAY = 0.996
 EPSILON_MIN = 0.01
 ALPHA = 0.001 # learning rate
 GAMMA = 0.99 # discount factor
 TAU = 0.1 # target network soft update hyperparameter
 EXPERIENCE_REPLAY_BATCH_SIZE = 500
-AGENT_MEMORY_LIMIT = 5000
-STEPS_BEFORE_REPLAY = 1000
+AGENT_MEMORY_LIMIT = 2000
+STEPS_BEFORE_REPLAY = 500
 
 OBSERVATION_SPACE_DIMS = 4
 ACTION_SPACE = [0,1]
@@ -120,11 +120,11 @@ class DoubleDQNAgent(object):
 
 
 def test_agent():
-    env = CustomCartPoleEnv(mode=0, render_mode='no')
+    env = CustomCartPoleEnv(mode=0, render_mode='no')#'human')
     trials = []
     NUMBER_OF_TRIALS=5
-    MAX_TRAINING_EPISODES = 1000
-    MAX_STEPS_PER_EPISODE = 1000
+    MAX_TRAINING_EPISODES = 3000
+    MAX_STEPS_PER_EPISODE = 2000
 
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
@@ -146,7 +146,6 @@ def test_agent():
                 action = agent.act(state)
                 
                 next_state, reward, done, _ = env.step(action)
-                #env.render()
                 episode_score += reward
                 s+=1
                 steps+=1
@@ -167,7 +166,7 @@ def test_agent():
             agent.update_epsilon()
             last_100_avg = np.mean(trial_episode_scores[-100:])
             
-            tmp = "Run: " + str(episode_index) + ", steps_pipodone: " + str(steps) + ", avg_points_per_step: " + str(episode_score/steps) + ", exploration: " + str(agent.epsilon) + ", score: " + str(episode_score) +", avg_last_100_score: " + str(last_100_avg)+"\n"
+            tmp = "Run: " + str(episode_index) + ", steps_done: " + str(steps) + ", avg_points_per_step: " + str(episode_score/steps) + ", exploration: " + str(agent.epsilon) + ", score: " + str(episode_score) +", avg_last_100_score: " + str(last_100_avg)+"\n"
             log_list.append(tmp)
 
             if len(log_list)>10:

@@ -15,14 +15,22 @@ class Cart():
         self.velocity = self.velocity + (acceleration*time_step)
 
     def reset(self):
-        self.x = random.uniform(-5.0, 5.0)
-        self.velocity = random.uniform(-0.0, 0.0)
+        self.x = 0  #random.uniform(-5.0, 5.0)
+        self.velocity = 0
 
     def print_info(self):
         print("x:", end =" ") 
         print(self.x, end =" ")
         print("vel:", end =" ") 
         print(self.velocity) 
+
+    def give_reward(self):
+        x = math.fabs(self.x)
+        if x < 5:
+            r = 1
+        else:
+            r = 1/x
+        return r
 
 class Pole():
     def __init__(self, mass, length, mass_center):
@@ -46,9 +54,9 @@ class Pole():
             self.theta = self.theta + (2 * math.pi)
 
     def reset(self):
-        self.theta = math.pi/2#random.uniform(-math.pi, math.pi)  # np.random.choice((0,1))* math.pi + random.uniform(-0.10, 0.10) #+ math.pi      #   math.pi   #  random.uniform(-math.pi, math.pi)
+        self.theta = random.uniform(-0.2, 0.2)+ np.random.choice((0,1))* math.pi#random.uniform(-math.pi, math.pi)  # np.random.choice((0,1))* math.pi + random.uniform(-0.10, 0.10) #+ math.pi      #   math.pi   #  random.uniform(-math.pi, math.pi)
         self.make_in_bounds()
-        self.theta_dot = 0   
+        self.theta_dot = 0
 
     def print_info(self):
         print("theta:", end =" ") 
@@ -62,7 +70,7 @@ class Pole():
         c = math.cos(self.theta/2)
         pos_reward = (1/((th*th)+0.3))
         if math.fabs(th_dot)>20:
-            vel_reward = 1000   #minus points - we dont want it to spin super fast
+            vel_reward = 10   #minus points - we dont want it to spin super fast
         else:
             vel_reward = ((2*(c*c))-1) * math.fabs(th_dot)
         return pos_reward, vel_reward
