@@ -11,14 +11,14 @@ import timeit
 
 # AGENT/NETWORK HYPERPARAMETERS
 EPSILON_INITIAL = 1.0 # exploration rate
-EPSILON_DECAY = 0.996
+EPSILON_DECAY = 0.997
 EPSILON_MIN = 0.01
 ALPHA = 0.001 # learning rate
-GAMMA = 0.99 # discount factor
-TAU = 0.1 # target network soft update hyperparameter
-EXPERIENCE_REPLAY_BATCH_SIZE = 500
-AGENT_MEMORY_LIMIT = 2000
-STEPS_BEFORE_REPLAY = 500
+GAMMA = 0.95 # discount factor
+TAU = 0.3 # target network soft update hyperparameter
+EXPERIENCE_REPLAY_BATCH_SIZE = 20
+AGENT_MEMORY_LIMIT = 10000
+STEPS_BEFORE_REPLAY = 10
 
 OBSERVATION_SPACE_DIMS = 4
 ACTION_SPACE = [0,1]
@@ -27,9 +27,8 @@ ACTION_SPACE = [0,1]
 
 def create_dqn(action_space, observation_space):
     nn = Sequential()
-    nn.add(Dense(40, input_dim=OBSERVATION_SPACE_DIMS, activation="relu"))
-    nn.add(Dense(20, activation='relu'))
-    nn.add(Dense(10, activation='relu'))
+    nn.add(Dense(128, input_dim=OBSERVATION_SPACE_DIMS, activation="relu"))
+    nn.add(Dense(128, activation='relu'))
     nn.add(Dense(len(ACTION_SPACE), activation='linear'))
     nn.compile(loss='mse', optimizer=Adam(lr=ALPHA))
     return nn
@@ -123,8 +122,8 @@ def test_agent():
     env = CustomCartPoleEnv(mode=0, render_mode='no')#'human')
     trials = []
     NUMBER_OF_TRIALS=5
-    MAX_TRAINING_EPISODES = 3000
-    MAX_STEPS_PER_EPISODE = 2000
+    MAX_TRAINING_EPISODES = 500
+    MAX_STEPS_PER_EPISODE = 400
 
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
@@ -153,7 +152,7 @@ def test_agent():
                 #print(state)
                 state = next_state
                  
-                if s > STEPS_BEFORE_REPLAY:
+                if s > STEPS_BEFORE_REPLAY and len(agent.memory) > 2*EXPERIENCE_REPLAY_BATCH_SIZE:
                     agent.experience_replay()
                     agent.update_target_network()
                     agent.save_model()

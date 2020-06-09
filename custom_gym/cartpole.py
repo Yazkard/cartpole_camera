@@ -45,12 +45,12 @@ class CustomCartPoleEnv(gym.Env):
         self.pole = Pole(1, 10, 10)
         self.gravity = 9.8
         self.time_step = 0.02
-        self.force_mag = 400.0
+        self.force_mag = 200.0
         self.mode = mode
         self.render_mode = render_mode
 
 
-        self.x_threshold = 100
+        self.x_threshold = 30
         self.theta_threshold_radians = math.pi
         
         high = np.array([self.x_threshold * 2,
@@ -97,29 +97,36 @@ class CustomCartPoleEnv(gym.Env):
 
         #print(T)
 
-        self.cart.make_step(T[0], self.time_step)
+        self.cart.make_step(-T[0], self.time_step)
         self.pole.make_step(T[1], self.time_step)
 
         #self.cart.print_info()
         #self.pole.print_info()
         
-        out_of_bounds =  self.cart.x < -self.x_threshold or self.cart.x > self.x_threshold
+        out_of_bounds =  self.cart.x < -self.x_threshold or self.cart.x > self.x_threshold or self.pole.theta > 0.6 or self.pole.theta < -0.6
+        
         done = bool(out_of_bounds)
 
         if done:
-            reward = -10.0
+            if self.cart.x < -self.x_threshold or self.cart.x > self.x_threshold:
+                reward = -1
+            else:
+                reward = -10
         else:
-            r1 = self.cart.give_reward()
-            r,v = self.pole.give_reward()
-            reward = r+r1
+            reward = 1
+        #     r1 = self.cart.give_reward()
+        #     r,v = self.pole.give_reward()
+        #     reward = r#+r1
+
+        #self.pole.give_reward()
 
         if self.render_mode != 'no' or self.mode:
             self.render(mode=self.render_mode)
         if self.mode == 0:
-            self.state = (self.cart.x, self.cart.velocity,self.pole.theta,self.pole.theta_dot)
-            return self.state, reward, done, {}
-        else:
+            self.state = (round(self.cart.x), round(self.cart.velocity*360/math.pi),round(self.pole.theta*360/math.pi),round(self.pole.theta_dot*360/math.pi))
             return np.array(self.state), reward, done, {}
+        else:
+            return self.state, reward, done, {}
 
 
 
@@ -137,12 +144,12 @@ class CustomCartPoleEnv(gym.Env):
     
 
     def render(self, mode='human', close=False): # Render the environment to the screen
-        screen_width = 1600
-        screen_height = 1000
+        screen_width = 400
+        screen_height = 200
 
         world_width = self.x_threshold*2
         scale = screen_width/world_width
-        carty = 180 # TOP OF CART
+        carty = 100 # TOP OF CART
         polewidth = 6.0
         polelen1 = scale * self.pole.length
         cartwidth = 40.0
@@ -160,7 +167,7 @@ class CustomCartPoleEnv(gym.Env):
 
             l,r,t,b = -polewidth/2,polewidth/2,polelen1-polewidth/2,-polewidth/2
             pole1 = rendering.FilledPolygon([(l,b), (l,t), (r,t), (r,b)])
-            pole1.set_color(.8,.6,.4)
+            pole1.set_color(.6,.6,.4)
             self.poletrans1 = rendering.Transform(translation=(0, axleoffset))
             pole1.add_attr(self.poletrans1)
             pole1.add_attr(self.carttrans)
